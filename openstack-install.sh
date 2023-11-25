@@ -15,7 +15,7 @@ source /etc/lsb-release
 source /etc/os-release
 
 if [ $ID_LIKE == "suse opensuse"]; then
-echo "Opensuse systems are not supported with this OpenStack distribution!"
+echo "Opensuse systems are not supported with this OpenStack Deployment!"
 exit
 fi
 
@@ -99,7 +99,7 @@ echo ""
 echo "OpenStack Deployment Info"
 echo "+-------------------------------------------------------------------------------------------------------------+"
 echo "|	The keystone credentials RC files are stored in the /root directory											"
-echo "|	The admin password is '$ADMIN_PASSWORD	'																	"
+echo "|	The admin password is '$ADMIN_PASSWORD'																	"
 echo "|	The demo password is '$DEMO_PASSWORD'																			"
 echo "|	Keystone is serving at http://$HOST_IP:5000/																"
 echo "|																												"
