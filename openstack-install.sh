@@ -46,9 +46,7 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-
-
-echo "Welcome to the OpenStack Installer (Ubuntu)"
+echo "Welcome to the OpenStack Installer (Debian)"
 echo ""
 
 echo "Continuing installation as $(id -un)..."
