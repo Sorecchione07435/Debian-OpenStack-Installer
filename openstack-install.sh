@@ -25,6 +25,7 @@ exit
 fi
 
 chmod +x scripts/prereqs.sh
+chmod +x scripts/rabbitmq.sh
 chmod +x scripts/mariadb.sh
 chmod +x scripts/keystone.sh
 chmod +x scripts/glance.sh
