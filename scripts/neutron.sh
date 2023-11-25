@@ -21,7 +21,7 @@ apt install neutron-server neutron-plugin-ml2 neutron-openvswitch-agent neutron-
 conf_neutron()
 {
 
-crudini --set $conf_file database connection mysql+pymysql://neutron:$SERVICE_PASSWORD@$HOST_IP/neutron
+crudini --set $conf_file database connection mysql+pymysql://neutron:$DATABASE_PASSWORD@$HOST_IP/neutron
 
 crudini --set $conf_file DEFAULT core_plugin ml2
 crudini --set $conf_file DEFAULT transport_url rabbit://openstack:$RABBITMQ_PASSWORD@$HOST_IP
