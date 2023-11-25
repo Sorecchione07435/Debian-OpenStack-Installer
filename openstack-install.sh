@@ -24,6 +24,18 @@ echo "OpenStack distribution with this utility is only supported in Debian-based
 exit
 fi
 
+chmod +x scripts/prereqs.sh
+chmod +x scripts/mariadb.sh
+chmod +x scripts/keystone.sh
+chmod +x scripts/glance.sh
+chmod +x scripts/placement.sh
+chmod +x scripts/nova.sh
+chmod +x scripts/nova-compute.sh
+chmod +x scripts/neutron.sh
+chmod +x scripts/horizon.sh
+chmod +x openstack.conf
+chmod +x finalize.sh
+
 cp openstack.conf scripts/openstack.conf
 
 clear
