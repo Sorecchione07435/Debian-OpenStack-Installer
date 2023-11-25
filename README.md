@@ -107,4 +107,31 @@ Now you will have to wait a few minutes, (depends on the timing of your machine)
 
 After the end of the installation you will see this output:
 
+```
+*** OpenStack Deploy Successful ***
+
+OpenStack Deployment Info
++-------------------------------------------------------------------------------------------------------------+
+|	The keystone credentials RC files are stored in the /root directory										
+|	The admin password is 'ADMIN_PASSWORD'														
+|	The demo password is 'DEMO_PASSWORD'															
+|	Keystone is serving at http://HOST_IP:5000/												
+|																			
+|	The Horizon dashboard is available at http://HOST_IP/dashboard										
+|																			
+|	The password for all services is 'SERVICE_PASSWORD', The password for all databases is 'DATABASE_PASSWORD'	
++-------------------------------------------------------------------------------------------------------------+
+
+System Info
++-------------------------------------------------------------------------------------------------------------+
+|	Linux Distro: Ubuntu																
+|	Version: 22.04 jammy 																
+|	OpenStack Release: yoga																
++-------------------------------------------------------------------------------------------------------------+
+```
+
+If during deployment you noticed that the public network or internal network was not created due to a temporary neutron endpoint failure you can run the ```finalize.sh``` script, in order to create the missing networks or the missing cirros image
+
+Now your OpenStack deployment will be ready to use, You can access the Horizon dashboard from: http://yourip/dashboard
+
 
