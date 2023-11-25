@@ -51,6 +51,7 @@ export OS_PROJECT_DOMAIN_NAME=Default
 export OS_AUTH_URL=http://$HOST_IP:5000/v3
 export OS_IDENTITY_API_VERSION=3
 
+openstack image delete cirros
 
 glance image-create --name "cirros" \
   --file cirros-0.4.0-x86_64-disk.img \
