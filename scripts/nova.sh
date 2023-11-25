@@ -53,9 +53,9 @@ crudini --set $conf placement password $SERVICE_PASSWORD
 su -s /bin/sh -c "nova-manage api_db sync" nova
 
 su -s /bin/sh -c "nova-manage cell_v2 map_cell0" nova
-
+set +e
 su -s /bin/sh -c "nova-manage cell_v2 create_cell --name=cell1 --verbose" nova
-
+set -e
 su -s /bin/sh -c "nova-manage db sync" nova
 
 su -s /bin/sh -c "nova-manage cell_v2 list_cells" nova
