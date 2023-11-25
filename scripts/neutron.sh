@@ -84,7 +84,7 @@ su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --co
 
 systemctl restart nova-api
 
-systemctl restart neutron-server service neutron-openvswitch-agent neutron-dhcp-agent neutron-metadata-agent nova-compute
+systemctl restart neutron-server neutron-openvswitch-agent neutron-dhcp-agent neutron-metadata-agent nova-compute
 
 }
 
