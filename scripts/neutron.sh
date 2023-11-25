@@ -14,7 +14,7 @@ conf_nova=/etc/nova/nova.conf
 
 install_pkgs(){
 
-apt install install neutron-server neutron-plugin-ml2 neutron-openvswitch-agent neutron-dhcp-agent neutron-metadata-agent -y
+apt install neutron-server neutron-plugin-ml2 neutron-openvswitch-agent neutron-dhcp-agent neutron-metadata-agent -y
 
 }
 
