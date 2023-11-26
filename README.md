@@ -134,4 +134,6 @@ If during deployment you noticed that the public network or internal network was
 
 Now your OpenStack deployment will be ready to use, You can access the Horizon dashboard from: http://yourip/dashboard
 
+**Please remember that this will not be a fully functional OpenStack installation**
+
 
