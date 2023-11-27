@@ -14,12 +14,12 @@ source openstack.conf
 source /etc/lsb-release
 source /etc/os-release
 
-if [ $ID_LIKE == "suse opensuse"]; then
-echo "Opensuse systems are not supported with this OpenStack Deployment!"
+if  $ID_LIKE == "suse opensuse"; then
+echo "OpenSUSE systems are not supported with this OpenStack Deployment!"
 exit
 fi
 
-if [ ! [ $ID_LIKE == "debian" ]; then
+if ! $ID_LIKE == "debian"; then
 echo "OpenStack distribution with this utility is only supported in Debian-based distros, and not in RHEL distros, support for RHEL will be released soon"
 exit
 fi
