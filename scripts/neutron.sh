@@ -8,14 +8,24 @@ source openstack.conf
 conf_file=/etc/neutron/neutron.conf
 conf_ml2=/etc/neutron/plugins/ml2/ml2_conf.ini
 conf_openvswitch=/etc/neutron/plugins/ml2/openvswitch_agent.ini
+conf_linuxbridge=/etc/neutron/plugins/ml2/linuxbridge_agent.ini
 conf_dhcp_agent=/etc/neutron/dhcp_agent.ini
 conf_metadata_agent=/etc/neutron/metadata_agent.ini
 conf_nova=/etc/nova/nova.conf
 
 install_pkgs(){
 
+if  [ $NEUTRON_ML2_MECHANISM_TYPE == "linuxbridge"]; then
+
+apt install neutron-server neutron-plugin-ml2 neutron-linuxbridge-agent neutron-dhcp-agent neutron-metadata-agent -y
+
+fi
+
+if  [ $NEUTRON_ML2_MECHANISM_TYPE == "openvswitch"]; then
+
 apt install neutron-server neutron-plugin-ml2 neutron-openvswitch-agent neutron-dhcp-agent neutron-metadata-agent -y
 
+fi
 }
 
 conf_neutron()
@@ -53,10 +63,13 @@ crudini --set $conf_file oslo_concurrency lock_path /var/lib/neutron/tmp
 
 crudini --set $conf_ml2 ml2 type_drivers flat,vlan,vxlan,local
 crudini --set $conf_ml2 ml2 tenant_network_types flat,vlan,local
-crudini --set $conf_ml2 ml2 mechanism_drivers openvswitch
+
 crudini --set $conf_ml2 ml2 extension_drivers port_security
 crudini --set $conf_ml2 ml2_type_flat flat_networks $HOST_IP_INTERFACE_NAME
 crudini --set $conf_ml2 securitygroup enable_ipset true
+
+if  [ $NEUTRON_ML2_MECHANISM_TYPE == "openvswitch"]; then
+crudini --set $conf_ml2 ml2 mechanism_drivers openvswitch
 
 crudini --set $conf_openvswitch ovs bridge_mappings provider:$HOST_IP_INTERFACE_NAME
 crudini --set $conf_openvswitch securitygroup enable_security_group true
@@ -65,6 +78,23 @@ crudini --set $conf_openvswitch firewall_driver openvswitch
 crudini --set $conf_dhcp_agent DEFAULT interface_driver openvswitch
 crudini --set $conf_dhcp_agent DEFAULT dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
 crudini --set $conf_dhcp_agent DEFAULT enable_isolated_metadata true
+
+fi
+
+if  [ $NEUTRON_ML2_MECHANISM_TYPE == "linuxbridge"]; then
+
+crudini --set $conf_ml2 ml2 mechanism_drivers linuxbridge
+
+crudini --set $conf_linuxbridge linux_bridge physical_interface_mappings provider:$HOST_IP_INTERFACE_NAME
+crudini --set $conf_linuxbridge vxlan enable_vxlan false
+crudini --set $conf_linuxbridge securitygroup enable_security_group true
+crudini --set $conf_linuxbridge firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+
+crudini --set $conf_dhcp_agent DEFAULT interface_driver linuxbridge
+crudini --set $conf_dhcp_agent DEFAULT dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+crudini --set $conf_dhcp_agent DEFAULT enable_isolated_metadata true
+
+fi
 
 crudini --set $conf_metadata_agent DEFAULT nova_metadata_host $HOST_IP
 crudini --set $conf_metadata_agent DEFAULT metadata_proxy_shared_secret $SERVICE_PASSWORD
