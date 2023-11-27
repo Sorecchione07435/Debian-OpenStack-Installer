@@ -22,6 +22,7 @@ Before using this little Utility we would need the requirements
 - Fedora
 - OpenSuse
 - Any distro that is not based on Debian but on Red Hat or OpenSuse
+(in Red Hat there is another deployment tool Packstack)
 
 ### Minimum requirements
 - Distro: Any Debian-based distro
