@@ -40,9 +40,14 @@ Well, after taking a little look at the requirements for this utility we can now
 
 ## OpenStack Deployment Steps
 
-First install any Debian distro (I recommend the classic Ubuntu distro) on a virtual machine or on a physical machine, the distro must be clean
+Install any Debian distro (I recommend the classic Ubuntu distro) on a virtual machine or on a physical machine, the distro must be clean
 
-First install git if it isn't already installed:
+First of all update all the packages on your system
+```
+apt update -y && apt upgrade -y
+```
+
+Install git if it isn't already installed:
 ```
 apt install git -y
 ```
@@ -62,32 +67,6 @@ and fill in all the fields:
 
 Specifying the values for the public network, for its subnet, also entering the IP address of your machine and the passwords for the administrator, demo user, all services, databases, and RabbitMQ and the OpenStack release
 
-(Pretty similar to Devstack's ```local.conf```)
-
-```
-#This is a small configuration file for configuring OpenStack
-#Set passwords for all OpenStack services, databases and RabbitMQ
-ADMIN_PASSWORD=secret
-SERVICE_PASSWORD=$ADMIN_PASSWORD
-RABBITMQ_PASSWORD=$ADMIN_PASSWORD
-DATABASE_PASSWORD=$ADMIN_PASSWORD
-DEMO_PASSWORD=$ADMIN_PASSWORD
-#Enter the IP address of your controller node where all OpenStack services will be installed
-HOST_IP=
-#Specifies the physical interface that will be used for Neutron
-HOST_IP_INTERFACE_NAME=
-#Here you need to enter all the values for the public network, such as Allocation Pool, Gateway and DNS
-#It is recommended to enter a larger IP address as Range Start to HOST_IP
-PUBLIC_SUBNET_CIDR=
-PUBLIC_SUBNET_RANGE_START=
-PUBLIC_SUBNET_RANGE_END=
-PUBLIC_SUBNET_GATEWAY=
-PUBLIC_SUBNET_DNS_SERVERS=
-#Set the type of Hypervisor where the instances will run, KVM is the default
-NOVA_COMPUTE_VIRT_TYPE=kvm
-#Specifies the OpenStack release to install, the default is Yoga
-OPENSTACK_RELEASE=yoga
-```
 After making your configuration, save the file
 
 Now give yourself permission to run the main script:
