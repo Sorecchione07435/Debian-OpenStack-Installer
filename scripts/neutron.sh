@@ -114,7 +114,13 @@ su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --co
 
 systemctl restart nova-api
 
+if  [ $NEUTRON_ML2_MECHANISM_TYPE == "openvswitch"]; then
 systemctl restart neutron-server neutron-openvswitch-agent neutron-dhcp-agent neutron-metadata-agent nova-compute
+fi
+
+if  [ $NEUTRON_ML2_MECHANISM_TYPE == "linuxbridge"]; then
+systemctl restart neutron-server neutron-linuxbridge-agent neutron-dhcp-agent neutron-metadata-agent nova-compute
+fi
 
 }
 
