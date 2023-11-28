@@ -15,13 +15,13 @@ conf_nova=/etc/nova/nova.conf
 
 install_pkgs(){
 
-if  [ $NEUTRON_ML2_MECHANISM_TYPE == "linuxbridge"]; then
+if  [ $NEUTRON_ML2_MECHANISM_TYPE == "linuxbridge" ]; then
 
 apt install neutron-server neutron-plugin-ml2 neutron-linuxbridge-agent neutron-dhcp-agent neutron-metadata-agent -y
 
 fi
 
-if  [ $NEUTRON_ML2_MECHANISM_TYPE == "openvswitch"]; then
+if  [ $NEUTRON_ML2_MECHANISM_TYPE == "openvswitch" ]; then
 
 apt install neutron-server neutron-plugin-ml2 neutron-openvswitch-agent neutron-dhcp-agent neutron-metadata-agent -y
 
@@ -68,7 +68,7 @@ crudini --set $conf_ml2 ml2 extension_drivers port_security
 crudini --set $conf_ml2 ml2_type_flat flat_networks $HOST_IP_INTERFACE_NAME
 crudini --set $conf_ml2 securitygroup enable_ipset true
 
-if  [ $NEUTRON_ML2_MECHANISM_TYPE == "openvswitch"]; then
+if  [ $NEUTRON_ML2_MECHANISM_TYPE == "openvswitch" ]; then
 crudini --set $conf_ml2 ml2 mechanism_drivers openvswitch
 
 crudini --set $conf_openvswitch ovs bridge_mappings provider:$HOST_IP_INTERFACE_NAME
@@ -81,7 +81,7 @@ crudini --set $conf_dhcp_agent DEFAULT enable_isolated_metadata true
 
 fi
 
-if  [ $NEUTRON_ML2_MECHANISM_TYPE == "linuxbridge"]; then
+if  [ $NEUTRON_ML2_MECHANISM_TYPE == "linuxbridge" ]; then
 
 crudini --set $conf_ml2 ml2 mechanism_drivers linuxbridge
 
@@ -114,11 +114,11 @@ su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --co
 
 systemctl restart nova-api
 
-if  [ $NEUTRON_ML2_MECHANISM_TYPE == "openvswitch"]; then
+if  [ $NEUTRON_ML2_MECHANISM_TYPE == "openvswitch" ]; then
 systemctl restart neutron-server neutron-openvswitch-agent neutron-dhcp-agent neutron-metadata-agent nova-compute
 fi
 
-if  [ $NEUTRON_ML2_MECHANISM_TYPE == "linuxbridge"]; then
+if  [ $NEUTRON_ML2_MECHANISM_TYPE == "linuxbridge" ]; then
 systemctl restart neutron-server neutron-linuxbridge-agent neutron-dhcp-agent neutron-metadata-agent nova-compute
 fi
 
