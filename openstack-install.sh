@@ -20,7 +20,7 @@ exit
 fi
 
 if [ ! $ID_LIKE == "debian"] || [ ! $ID_LIKE == "ubuntu debian" ]; then
-echo "OpenStack distribution with this utility is only supported in Debian-based distros, and not in RHEL distros, support for RHEL will be released soon"
+echo "OpenStack distribution with this utility is only supported in Debian-based distros, and not in RHEL distros"
 exit
 fi
 
