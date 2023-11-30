@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Configure the Placement service (Placement)
 
 set -o xtrace
 set -e
