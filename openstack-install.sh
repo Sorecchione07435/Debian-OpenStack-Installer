@@ -19,10 +19,11 @@ echo "OpenSUSE systems are not supported with this OpenStack Deployment!"
 exit
 fi
 
-if [ ! $ID_LIKE == "debian"] || [ ! $ID_LIKE == "ubuntu debian" ]; then
-echo "OpenStack distribution with this utility is only supported in Debian-based distros, and not in RHEL distros"
-exit
+if [ ! -f "/etc/debian_version" ]; then
+   echo "OpenStack distribution with this utility is only supported in Debian-based distros, and not in RHEL distros"
+   exit
 fi
+
 
 chmod +x scripts/prereqs.sh
 chmod +x scripts/rabbitmq.sh
