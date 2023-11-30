@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Configure the Networking service (Glance)
 
 set -o xtrace
 set -e
