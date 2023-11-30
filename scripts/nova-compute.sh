@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Configure an Compute Node
 
 set -o xtrace
 set -e
