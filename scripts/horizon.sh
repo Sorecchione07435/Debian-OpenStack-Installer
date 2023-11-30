@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Configure the Dashboard (Horizon)
 
 set -o xtrace
 set -e
