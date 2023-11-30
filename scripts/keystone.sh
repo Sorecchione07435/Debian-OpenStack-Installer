@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Configure the Identity service (Keystone)
 
 set -o xtrace
 set -e
