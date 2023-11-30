@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Configure the Compute service (Nova)
 
 set -o xtrace
 set -e
