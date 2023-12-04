@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Configure the Networking service (Glance)
+# Configure the Networking service (Neutron)
 
 set -o xtrace
 set -e
