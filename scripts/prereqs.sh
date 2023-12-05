@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
 set -o xtrace
-
 source openstack.conf
 
 set_openstack_release(){
 
-if ! false; then 
+if [ ! $OPENSTACK_RELEASE == "yoga" ]; then
 
 add-apt-repository cloud-archive:$OPENSTACK_RELEASE -y
 
