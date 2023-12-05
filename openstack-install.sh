@@ -56,7 +56,13 @@ echo ""
 
 if [ $INSTALL_CINDER == "yes" ]; then
 
-echo "1 | 11 : Configuring prereqs..."
+echo "NOTICE:"
+echo ""
+printf 'You have chosen to install the Block Storage Service (Cinder), ONLY a controller node will be installed, at the end of the OpenStack deployment you will not be able to create volumes unless you manually configure a storage node with a physical volume etc..., Proceed with the installation? (yes/no)'
+read answer
+
+if [ "$answer" != "${answer#[Yy]}" ] ;then 
+    echo "1 | 11 : Configuring prereqs..."
 
 scripts/prereqs.sh || fatal "1"
 
@@ -101,6 +107,9 @@ scripts/neutron.sh || fatal "10"
 echo "11 | 11 : Configuring Horizon..."
 
 scripts/horizon.sh || fatal "11"
+else
+    exit
+fi
 
 else
 
