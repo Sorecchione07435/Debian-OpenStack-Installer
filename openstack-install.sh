@@ -30,6 +30,7 @@ chmod +x scripts/rabbitmq.sh
 chmod +x scripts/mariadb.sh
 chmod +x scripts/keystone.sh
 chmod +x scripts/glance.sh
+chmod +x scripts/cinder.sh
 chmod +x scripts/placement.sh
 chmod +x scripts/nova.sh
 chmod +x scripts/nova-compute.sh
@@ -52,6 +53,56 @@ echo ""
 
 echo "Continuing installation as $(id -un)..."
 echo ""
+
+if [ $INSTALL_CINDER == "yes" ]; then
+
+echo "1 | 11 : Configuring prereqs..."
+
+scripts/prereqs.sh || fatal "1"
+
+echo "2 | 11 : Configuring RabbitMQ..."
+
+scripts/rabbitmq.sh || fatal "2"
+
+echo "3 | 11 : Configuring MariaDB..."
+
+scripts/mariadb.sh || fatal "3"
+
+echo "4 | 11 : Configuring Keystone..."
+
+scripts/keystone.sh || fatal "4"
+
+echo "5 | 11 : Configuring Glance..."
+
+scripts/glance.sh || fatal "5"
+
+rm -rf $BASE_DIR/cirros-0.4.0-x86_64-disk.img
+
+echo "6 | 11 : Configuring Cinder..."
+
+scripts/cinder.sh || fatal "6"
+
+echo "7 | 11 : Configuring Placement..."
+
+scripts/placement.sh || fatal "7"
+
+echo "8 | 11 : Configuring Nova..."
+
+scripts/nova.sh || fatal "8"
+
+echo "9 | 11 : Configuring Nova Compute Node..."
+
+scripts/nova-compute.sh || fatal "9"
+
+echo "10 | 11 : Configuring Neutron..."
+
+scripts/neutron.sh || fatal "10"
+
+echo "11 | 11 : Configuring Horizon..."
+
+scripts/horizon.sh || fatal "11"
+
+else
 
 echo "1 | 10 : Configuring prereqs..."
 
@@ -94,6 +145,10 @@ scripts/neutron.sh || fatal "9"
 echo "10 | 10 : Configuring Horizon..."
 
 scripts/horizon.sh || fatal "10"
+
+fi
+
+
 
 echo "*** OpenStack Deploy Successful ***"
 echo ""
