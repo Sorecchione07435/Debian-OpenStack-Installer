@@ -81,7 +81,7 @@ And finally start the OpenStack deployment with:
 
 Now you will have to wait a few minutes, (depends on the timing of your machine), this will configure the following OpenStack services (Keystone, Glance, Placement, Nova, Neutron, Horizon)
 
-(Cinder will be included soon)
+Cinder has finally been introduced in the installer, it will be possible to install a controller node, to configure a storage node follow https://docs.openstack.org/cinder/latest/install/cinder-storage-install-ubuntu.html
 
 **Warning!: If in case the scripts that configure each specific service are unable to create the Cirros image or the Neutron networks, there is another SH script aside to create the missing things which is: ```finalize.sh```**
 
