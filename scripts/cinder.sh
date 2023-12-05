@@ -19,7 +19,6 @@ conf_cinder(){
 crudini --set $conf_file database connection mysql+pymysql://cinder:$DATABASE_PASSWORD@$HOST_IP/cinder
 
 crudini --set $conf_file DEFAULT transport_url rabbit://openstack:$RABBITMQ_PASSWORD@$HOST_IP:5672/
-crudini --set $conf_file DEFAULT auth_strategy keystone
 crudini --set $conf_file DEFAULT glance_api_servers http://$HOST_IP:9292
 
 crudini --set $conf_file keystone_authtoken www_authenticate_uri http://$HOST_IP:5000/
