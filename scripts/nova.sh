@@ -40,6 +40,10 @@ crudini --set $conf vnc server_proxyclient_address $HOST_IP
 
 crudini --set $conf glance api_servers http://$HOST_IP:9292
 
+if [ $INSTALL_CINDER == "yes" ]; then
+crudini --set $conf cinder os_region_name RegionOne
+fi
+
 crudini --set $conf oslo_concurrency lock_path /var/lib/nova/tmp
 
 crudini --set $conf placement region_name RegionOne
