@@ -37,6 +37,7 @@ crudini --set $conf_file database connection mysql+pymysql://neutron:$DATABASE_P
 crudini --set $conf_file DEFAULT core_plugin ml2
 crudini --set $conf_file DEFAULT transport_url rabbit://openstack:$RABBITMQ_PASSWORD@$HOST_IP
 crudini --set $conf_file DEFAULT auth_strategy keystone
+crudini --set $conf_file DEFAULT service_plugins router
 
 crudini --set $conf_file keystone_authtoken www_authenticate_uri http://$HOST_IP:5000
 crudini --set $conf_file keystone_authtoken auth_url http://$HOST_IP:5000
