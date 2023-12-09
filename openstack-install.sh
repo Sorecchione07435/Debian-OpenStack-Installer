@@ -7,7 +7,6 @@ NORMAL=$(tput sgr0)
 
 fatal() {
   echo "${RED}FATAL ERROR${NORMAL}: on status" $* >&2
-  echo "A command did not return a non-zero status $?"
   exit 2
 }
 
