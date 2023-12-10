@@ -10,7 +10,7 @@ conf_file=/etc/glance/glance-api.conf
 
 install_pkgs(){
 
-apt install glance -y
+apt install glance-api -y
 
 }
 
