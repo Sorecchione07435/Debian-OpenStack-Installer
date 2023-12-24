@@ -1,5 +1,5 @@
 # Debian OpenStack Installer
-### A Devstack alternative to deploy an OpenStack test environment on Debian in a short time
+### A Devstack alternative to install an OpenStack test environment on Debian in a short time
 
 After much effort, here it is, Debian OpenStack Installer is a series of SH scripts that allows the distribution of a minimal OpenStack environment in Debian distros
 It allows you to independently deploy OpenStack in a single node
@@ -62,7 +62,7 @@ Now enter the following folder
 cd Debian-OpenStack-Installer/
 ```
 
-And before starting the OpenStack deployment you first need to edit a small configuration file, open the file with nano: ```openstack.conf```
+And before starting the OpenStack installation you first need to edit a small configuration file, open the file with nano: ```openstack.conf```
 and fill in all the fields:
 
 Specifying the values for the public network, for its subnet, also entering the IP address of your machine and the passwords for the administrator, demo user, all services, databases, and RabbitMQ and the OpenStack release
@@ -74,7 +74,7 @@ Now give yourself permission to run the main script:
 chmod +x openstack-install.sh
 ```
 
-And finally start the OpenStack deployment with:
+And finally start the OpenStack installation with:
 ```
 ./openstack-install.sh
 ```
@@ -88,9 +88,9 @@ Cinder has finally been introduced in the installer, it will be possible to inst
 After the end of the installation you will see this output:
 
 ```
-*** OpenStack Deploy Successful ***
+*** OpenStack installation Successful ***
 
-OpenStack Deployment Info
+OpenStack installation Info
 +-------------------------------------------------------------------------------------------------------------+
 |	The keystone credentials RC files are stored in the /root directory										
 |	The admin password is 'ADMIN_PASSWORD'														
@@ -109,7 +109,7 @@ System Info
 +-------------------------------------------------------------------------------------------------------------+
 ```
 
-If during deployment you noticed that the public network or internal network was not created due to a temporary neutron endpoint failure you can run the ```finalize.sh``` script, in order to create the missing networks or the missing cirros image
+If during installation you noticed that the public network or internal network was not created due to a temporary neutron endpoint failure you can run the ```finalize.sh``` script, in order to create the missing networks or the missing cirros image
 
 Now your OpenStack deployment will be ready to use, You can access the Horizon dashboard from: http://yourip/dashboard, the user is 'admin' and the password is the one you entered on the $ADMIN_PASSWORD directive
 
