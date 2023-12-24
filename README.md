@@ -38,7 +38,7 @@ Before using this little Utility we would need the requirements
 
 Well, after taking a little look at the requirements for this utility we can now move on to the installation
 
-## OpenStack Deployment Steps
+## OpenStack Installation Steps
 
 Install any Debian distro (I recommend the classic Ubuntu distro) on a virtual machine or on a physical machine, the distro must be clean
 
