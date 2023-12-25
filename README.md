@@ -44,6 +44,7 @@ Install any Debian distro (I recommend the classic Ubuntu distro) on a virtual m
 
 First of all update all the packages on your system
 ```
+sudo
 apt update -y && apt upgrade -y
 ```
 
@@ -54,6 +55,7 @@ apt install git -y
 
 Now proceed to clone the Debian OpenStack Installer repo
 ```
+cd /root
 git clone https://github.com/Sorecchione07435/Debian-OpenStack-Installer.git
 ```
 
