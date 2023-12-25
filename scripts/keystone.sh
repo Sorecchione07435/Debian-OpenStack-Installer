@@ -155,7 +155,7 @@ openstack endpoint create --region RegionOne network admin http://$HOST_IP:9696
   
 }
 
-create_environment_cli_scripts(){
+generate_environment_cli_scripts(){
 
 if [ ! -f /root/admin-openrc.sh ]; then
 cat >> /root/admin-openrc.sh << EOF
