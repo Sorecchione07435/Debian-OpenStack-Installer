@@ -159,9 +159,9 @@ fi
 
 
 
-echo "*** OpenStack Deploy Successful ***"
+echo "*** OpenStack Installation Successful ***"
 echo ""
-echo "OpenStack Deployment Info"
+echo "OpenStack Installation Info"
 echo "+-------------------------------------------------------------------------------------------------------------+"
 echo "|	The keystone credentials RC files are stored in the /root directory"
 echo "|	The admin password is '$ADMIN_PASSWORD'"
