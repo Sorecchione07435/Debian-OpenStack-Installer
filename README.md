@@ -113,7 +113,7 @@ System Info
 
 If during installation you noticed that the public network or internal network was not created due to a temporary neutron endpoint failure you can run the ```finalize.sh``` script, in order to create the missing networks or the missing cirros image
 
-Now your OpenStack deployment will be ready to use, You can access the Horizon dashboard from: http://yourip/dashboard, the user is 'admin' and the password is the one you entered on the $ADMIN_PASSWORD directive
+Now your OpenStack installation will be ready to use, You can access the Horizon dashboard from: http://yourip/dashboard, the user is 'admin' and the password is the one you entered on the ADMIN_PASSWORD directive and you will be able to make experimental use of it, launching instances, uploading new images etc., the network will not work 100%
 
 **Please remember that this will not be a fully functional OpenStack installation**
 
