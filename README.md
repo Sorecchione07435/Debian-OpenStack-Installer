@@ -44,7 +44,7 @@ Install any Debian distro (I recommend the classic Ubuntu distro) on a virtual m
 
 First of all update all the packages on your system
 ```
-sudo
+sudo su
 apt update -y && apt upgrade -y
 ```
 
