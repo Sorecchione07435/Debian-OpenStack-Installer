@@ -5,11 +5,7 @@ source openstack.conf
 
 set_openstack_release(){
 
-#if [ ! $OPENSTACK_RELEASE == "yoga" ]; then
-
 add-apt-repository cloud-archive:$OPENSTACK_RELEASE -y
-
-#fi
 
 }
 
