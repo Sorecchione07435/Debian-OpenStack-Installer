@@ -4,6 +4,8 @@
 After much effort, here it is, Debian OpenStack Installer is a series of SH scripts that allows the distribution of a minimal OpenStack environment in Debian distros
 It allows you to independently deploy OpenStack in a single node
 
+Each SH script configures a single service 
+
 Before using this little Utility we would need the requirements
 
 ### Supported Distros:
