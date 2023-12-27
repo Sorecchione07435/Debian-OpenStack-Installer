@@ -5,7 +5,6 @@ set -o xtrace
 set -e
 
 source openstack.conf
-
 conf=/etc/nova/nova.conf
 
 install_pkgs(){
