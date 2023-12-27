@@ -5,7 +5,6 @@ set -o xtrace
 set -e
 
 source openstack.conf
-
 conf_file=/etc/glance/glance-api.conf
 
 install_pkgs(){
