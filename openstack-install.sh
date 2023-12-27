@@ -58,7 +58,7 @@ if [ $INSTALL_CINDER == "yes" ]; then
 
 echo "NOTICE:"
 echo ""
-printf 'You have chosen to install the Block Storage Service (Cinder), ONLY a controller node will be installed, at the end of the OpenStack deployment you will not be able to create volumes unless you manually configure a storage node with a physical volume etc..., Proceed with the installation? (yes/no)'
+printf 'You have chosen to install the Block Storage Service (Cinder), ONLY a controller node will be installed, at the end of the OpenStack installation you will not be able to create volumes unless you manually configure a storage node with a physical volume etc..., Proceed with the installation? (yes/no)'
 read answer
 
 if [ "$answer" != "${answer#[Yy]}" ] ;then 
