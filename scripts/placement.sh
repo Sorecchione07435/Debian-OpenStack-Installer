@@ -5,7 +5,6 @@ set -o xtrace
 set -e
 
 source openstack.conf
-
 conf_file=/etc/placement/placement.conf
 
 install_pkgs(){
