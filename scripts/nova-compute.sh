@@ -5,7 +5,6 @@ set -o xtrace
 set -e
 
 source openstack.conf
-
 conf_file=/etc/nova/nova.conf
 conf_compute_file=/etc/nova/nova-compute.conf
 
