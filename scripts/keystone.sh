@@ -192,7 +192,7 @@ set +e
 create_projects_and_demo_user
 create_services_users
 create_services_endpoints
-create_environment_cli_scripts
+generate_environment_cli_scripts
 
 echo "Done!"
 exit 0
