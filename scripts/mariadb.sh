@@ -2,17 +2,14 @@
 
 set -o xtrace
 set -e
-
 source openstack.conf
 
 install_pkgs(){
 
 apt install mariadb-server python3-pymysql -y
-
 }
 
 conf_mariadb(){
-
 if [ ! -f /etc/mysql/mariadb.conf.d/99-openstack.cnf ]; then
 cat >> /etc/mysql/mariadb.conf.d/99-openstack.cnf << EOF
 [mysqld]
@@ -27,7 +24,6 @@ EOF
 fi
 
 systemctl restart mysql
-
 }
 
 install_pkgs
