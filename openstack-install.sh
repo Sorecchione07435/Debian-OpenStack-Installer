@@ -20,7 +20,7 @@ exit
 fi
 
 if [ ! -f "/etc/debian_version" ]; then
-   echo "OpenStack distribution with this utility is only supported in Debian-based distros, and not in RHEL distros"
+   echo "OpenStack distribution with this utility is only supported in Debian-based distros, and not in RHEL, OpenSUSE distros or MacOS"
    exit
 fi
 
