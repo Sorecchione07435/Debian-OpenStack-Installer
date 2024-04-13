@@ -24,7 +24,6 @@ if [ ! -f "/etc/debian_version" ]; then
    exit
 fi
 
-
 chmod +x scripts/prereqs.sh
 chmod +x scripts/rabbitmq.sh
 chmod +x scripts/mariadb.sh
