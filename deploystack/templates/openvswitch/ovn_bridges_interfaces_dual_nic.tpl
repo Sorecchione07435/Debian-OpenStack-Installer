@@ -5,7 +5,8 @@ auto {management_iface}
 iface {management_iface} inet static
     address {ip_address}
     netmask {ip_address_netmask}
-{subnet_address_gateway}    dns-nameservers {subnet_address_dns_servers}
+{subnet_address_gateway}    
+    dns-nameservers {subnet_address_dns_servers}
 
 auto {public_iface}
 iface {public_iface} inet manual
