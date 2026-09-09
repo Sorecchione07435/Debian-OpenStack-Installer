@@ -6,11 +6,13 @@ import os
 
 from .parser import get
 from ..core import colors
+from ..core.system_utils import get_device_for_path
 
 from pathlib import Path
 
 prohibited_pw_chars = [' ', '$', '`', '\\']
 VALID_PATH_RE = re.compile(r"^/[A-Za-z0-9._/-]+$")
+
 
 ALLOWED_NFS_OPTIONS = {
     "vers",

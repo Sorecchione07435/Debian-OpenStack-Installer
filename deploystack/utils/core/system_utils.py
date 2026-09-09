@@ -14,6 +14,11 @@ from time import sleep, time
 from ...utils.core import colors
 from ...utils.config.parser import get
 
+VIRTUAL_FILESYSTEMS = {
+    "devtmpfs", "tmpfs", "proc", "sysfs", "overlay", "squashfs",
+    "cgroup", "cgroup2", "devpts", "mqueue", "debugfs", "tracefs",
+    "securityfs", "pstore", "bpf", "autofs", "hugetlbfs",
+}
 
 def get_parent_disk(device):
     dev_name = device.removeprefix("/dev/")
@@ -52,6 +57,9 @@ def get_physical_disk(path):
 
     device = get_device_for_path(path)
     if not device:
+        return None
+
+    if device in VIRTUAL_FILESYSTEMS or not device.startswith("/dev/"):
         return None
 
     seen = set()
