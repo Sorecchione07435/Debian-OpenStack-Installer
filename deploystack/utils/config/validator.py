@@ -530,7 +530,7 @@ def validate_cinder_backup(config) -> bool:
 
         if posix_backup_path:
             if "lvm" in enabled_cinder_backends:
-                vg_name = get(config, "cinder.volumes.drivers.lvm.VOLUME_GROUP")
+                vg_name = get(config, "cinder.backends.lvm.VOLUME_GROUP")
 
                 backup_disk = get_physical_disk(get_device_for_path(posix_backup_path))
                 vg_disks = get_vg_physical_disks(vg_name)
