@@ -2,6 +2,7 @@ import ipaddress
 import psutil
 import subprocess
 import re
+import os
 
 from .parser import get
 from ..core import colors
@@ -29,76 +30,20 @@ ALLOWED_NFS_OPTIONS = {
     "fg",
 }
 
-def get_parent_disk(device):
-    dev_name = device.removeprefix("/dev/")
-    try:
-        result = subprocess.run(
-            ["lsblk", "-no", "PKNAME", f"/dev/{dev_name}"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        parent = result.stdout.strip()
-        if parent:
-            return f"/dev/{parent}"
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        pass
-    return device
+def parse_nfs_source(source):
+    if not source or ":" not in source:
+        return None, None
+    server, _, export = source.partition(":")
+    return server.strip(), export.strip()
 
-def get_device_for_path(path):
-    if not path:
-        return None
 
-    try:
-        result = subprocess.run(
-            ["findmnt", "-n", "-o", "SOURCE", "-T", path],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
+def get_nfs_share_for_path(path):
+    check_path = path
+    while check_path and check_path != "/" and not os.path.exists(check_path):
+        check_path = os.path.dirname(check_path)
 
-        return result.stdout.strip()
-
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return None
-    
-def get_physical_disk(path):
-
-    device = get_device_for_path(path)
-    if not device:
-        return None
-
-    seen = set()
-    current = device
-    while current not in seen:
-        seen.add(current)
-        parent = get_parent_disk(current)
-        if parent == current:
-            break
-        current = parent
-
-    return current
-
-def get_vg_physical_disks(vg_name):
-    try:
-        result = subprocess.run(
-            ["pvs", "--noheadings", "-o", "pv_name", "--select", f"vg_name={vg_name}"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return []
-
-    pv_devices = [line.strip() for line in result.stdout.splitlines() if line.strip()]
-
-    disks = set()
-    for pv in pv_devices:
-        disk = get_physical_disk(pv)
-        if disk:
-            disks.add(disk)
-
-    return disks
+    source = get_device_for_path(check_path)
+    return parse_nfs_source(source)
 
 def is_valid_nfs_options(options: str) -> bool:
     try:

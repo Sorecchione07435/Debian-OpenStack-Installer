@@ -6,7 +6,7 @@ import validators
 
 from ipaddress import ip_address, ip_network
 
-from .helpers import interface_exists, validate_ip, validate_cidr, is_loop_device, is_safe_lvm_device, validate_positive_int, is_valid_path, validate_port, is_valid_nfs_options, is_valid_nfs_share, ALLOWED_NFS_OPTIONS, get_parent_disk, get_device_for_path, get_physical_disk, get_vg_physical_disks
+from .helpers import interface_exists, validate_ip, validate_cidr, is_loop_device, is_safe_lvm_device, validate_positive_int, is_valid_path, validate_port, is_valid_nfs_share, is_valid_nfs_options, ALLOWED_NFS_OPTIONS
 from ..core import colors
 from .parser import get
 
@@ -474,24 +474,7 @@ def validate_neutron(config) -> bool:
 def validate_cinder_backup(config) -> bool:
     ok = True
 
-    def parse_nfs_source(source):
-        if not source or ":" not in source:
-            return None, None
-        server, _, export = source.partition(":")
-        return server.strip(), export.strip()
-
-
-    def get_nfs_share_for_path(path):
-        check_path = path
-        while check_path and check_path != "/" and not os.path.exists(check_path):
-            check_path = os.path.dirname(check_path)
-
-        source = get_device_for_path(check_path)
-        return parse_nfs_source(source)
-
     backup_driver = (get(config, "cinder.backup.DRIVER") or "").strip().lower()
-
-    enabled_cinder_backends = get(config, "cinder.ENABLED_BACKENDS", []) or []
 
     cinder_backup_fields = [
         "cinder.backup.DRIVER",
@@ -527,50 +510,6 @@ def validate_cinder_backup(config) -> bool:
 
         if not is_valid_path(posix_backup_path, "cinder.backup.drivers.posix.BACKUP_PATH"):
             ok = False
-
-        if posix_backup_path:
-            if "lvm" in enabled_cinder_backends:
-                vg_name = get(config, "cinder.backends.lvm.VOLUME_GROUP")
-
-                backup_disk = get_physical_disk(get_device_for_path(posix_backup_path))
-                vg_disks = get_vg_physical_disks(vg_name)
-
-                if backup_disk and vg_disks:
-                    if backup_disk in vg_disks:
-                        print(
-                            f"{colors.YELLOW}Warning: 'cinder.backup.drivers.posix.BACKUP_PATH' "
-                            f"is located on the same physical disk ({backup_disk}) as the Cinder LVM "
-                            f"volume group ('{vg_name}'). In the event of a disk failure, the backups "
-                            f"will not be recoverable.{colors.RESET}"
-                        )
-                else:
-                    print(
-                        f"{colors.YELLOW}Warning: unable to determine if "
-                        f"'cinder.backup.drivers.posix.BACKUP_PATH' shares the physical disk "
-                        f"with the Cinder volume group ('{vg_name}').{colors.RESET}"
-                    )
-
-            if "nfs" in enabled_cinder_backends:
-                nfs_backup_share = get(config, "cinder.backends.nfs.NFS_SHARE")
-
-                backup_source = get_nfs_share_for_path(posix_backup_path)
-                backup_server, backup_export = parse_nfs_source(backup_source)
-                vol_server, vol_export = parse_nfs_source(nfs_backup_share)
-
-                if backup_server and vol_server:
-                    if backup_server == vol_server and backup_export == vol_export:
-                        print(
-                            f"{colors.YELLOW}Warning: 'cinder.backup.drivers.posix.BACKUP_PATH' "
-                            f"is mounted from the same NFS export ({nfs_backup_share}) as the Cinder "
-                            f"volume backend NFS. In the event of a storage failure, the "
-                            f"backups will not be recoverable.{colors.RESET}"
-                        )
-                    elif backup_server == vol_server:
-                        print(
-                            f"{colors.YELLOW}Warning: 'cinder.backup.drivers.posix.BACKUP_PATH' "
-                            f"is mounted from the same NFS server ({backup_server}) as the Cinder "
-                            f"volume backend NFS, on a different export.{colors.RESET}"
-                        )
 
     elif backup_driver == "nfs":
         
@@ -613,27 +552,6 @@ def validate_cinder_backup(config) -> bool:
             if use_external_share not in ("yes", "no", "true", "false"):
                 print(f"{colors.RED}Error: '{nfs_backup_fields[2]}' must be yes/no{colors.RESET}")
                 ok = False
-
-        if "nfs" in enabled_cinder_backends:
-            backup_server, backup_export = parse_nfs_source(nfs_share)
-
-            vol_nfs_share = get(config, f"cinder.backends.nfs.NFS_SHARE")
-            vol_server, vol_export = parse_nfs_source(vol_nfs_share)
-
-            if backup_server and vol_server:
-                if backup_server == vol_server and backup_export == vol_export:
-                    print(
-                        f"{colors.YELLOW}Warning: 'cinder.backup.drivers.nfs.NFS_SHARE' "
-                        f"points to the same NFS export ({nfs_share}) as the Cinder volume "
-                        f"backend NFS. In the event of a storage failure, the backups "
-                        f"will not be recoverable.{colors.RESET}"
-                    )
-                elif backup_server == vol_server:
-                    print(
-                        f"{colors.YELLOW}Warning: 'cinder.backup.drivers.nfs.NFS_SHARE' uses the "
-                        f"same NFS server ({backup_server}) as the Cinder volume backend "
-                        f"NFS, on a different export.{colors.RESET}"
-                    )
 
     fields_to_validate_int = [
         cinder_backup_fields[2],
