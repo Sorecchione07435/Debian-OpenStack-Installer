@@ -366,6 +366,8 @@ def finalize(config):
 
     if not enable_ipv4_forwarding() : return False
 
+    print()
+
     if not run_command(["systemctl", "daemon-reload"], "Reloading system daemon...") : return False
     if not run_command(["systemctl", "enable", "--now", "ovs-nova-perms.service"], "Enabling OVS Nova Permission Service...") : return False
 
