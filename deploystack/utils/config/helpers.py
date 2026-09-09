@@ -46,6 +46,9 @@ def get_parent_disk(device):
     return device
 
 def get_device_for_path(path):
+    if not path:
+        return None
+
     try:
         result = subprocess.run(
             ["findmnt", "-n", "-o", "SOURCE", "-T", path],
@@ -58,7 +61,7 @@ def get_device_for_path(path):
 
     except (subprocess.CalledProcessError, FileNotFoundError):
         return None
-
+    
 def get_physical_disk(path):
 
     device = get_device_for_path(path)
