@@ -386,8 +386,8 @@ def conf_cinder(config):
         sparsed_volumes = get(config, "cinder.backends.nfs.NFS_SPARSED_VOLUMES", "sparse")
         sparsed_volumes = str(sparsed_volumes).lower() == "sparse"
 
-        nfs_used_ratio = get(config, "cinder.backends.nfs.NFS_USED_RATIO")
-        nfs_oversub_ratio = get(config, "cinder.backends.nfs.NFS_OVERSUB_RATIO") 
+        nfs_used_ratio = get(config, "cinder.backends.nfs.NFS_USED_RATIO", 0.95) 
+        nfs_oversub_ratio = get(config, "cinder.backends.nfs.NFS_OVERSUB_RATIO", 1.0) 
 
         enable_snapshots = parse_bool(get(config, "cinder.backends.nfs.ENABLE_SNAPSHOTS"), False)
 

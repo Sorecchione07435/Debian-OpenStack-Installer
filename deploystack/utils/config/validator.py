@@ -6,7 +6,7 @@ import validators
 
 from ipaddress import ip_address, ip_network
 
-from .helpers import interface_exists, validate_ip, validate_cidr, is_loop_device, is_safe_lvm_device, validate_positive_int, is_valid_path, validate_port
+from .helpers import interface_exists, validate_ip, validate_cidr, is_loop_device, is_safe_lvm_device, validate_positive_int, is_valid_path, validate_port, is_valid_nfs_options, is_valid_nfs_share, ALLOWED_NFS_OPTIONS, get_parent_disk, get_device_for_path, get_physical_disk, get_vg_physical_disks
 from ..core import colors
 from .parser import get
 
@@ -15,6 +15,7 @@ from ...utils.config.helpers import parse_bool, prohibited_pw_chars
 OPENSTACK_RESERVED_PORTS = {
     5000,   # Keystone
     5672,   # RabbitMQ
+    3306,
     6080,   # Nova VNC
     8774,   # Nova
     #8776,   # Cinder
@@ -473,7 +474,24 @@ def validate_neutron(config) -> bool:
 def validate_cinder_backup(config) -> bool:
     ok = True
 
+    def parse_nfs_source(source):
+        if not source or ":" not in source:
+            return None, None
+        server, _, export = source.partition(":")
+        return server.strip(), export.strip()
+
+
+    def get_nfs_share_for_path(path):
+        check_path = path
+        while check_path and check_path != "/" and not os.path.exists(check_path):
+            check_path = os.path.dirname(check_path)
+
+        source = get_device_for_path(check_path)
+        return parse_nfs_source(source)
+
     backup_driver = (get(config, "cinder.backup.DRIVER") or "").strip().lower()
+
+    enabled_cinder_backends = get(config, "cinder.ENABLED_BACKENDS", []) or []
 
     cinder_backup_fields = [
         "cinder.backup.DRIVER",
@@ -510,58 +528,62 @@ def validate_cinder_backup(config) -> bool:
         if not is_valid_path(posix_backup_path, "cinder.backup.drivers.posix.BACKUP_PATH"):
             ok = False
 
+        if "lvm" in enabled_cinder_backends:
+            vg_name = get(config, "cinder.volumes.drivers.lvm.VOLUME_GROUP")
+
+            backup_disk = get_physical_disk(get_device_for_path(posix_backup_path))
+            vg_disks = get_vg_physical_disks(vg_name)
+
+            if backup_disk and vg_disks:
+                if backup_disk in vg_disks:
+                    print(
+                        f"{colors.YELLOW}Warning: 'cinder.backup.drivers.posix.BACKUP_PATH' "
+                        f"is located on the same physical disk ({backup_disk}) as the Cinder LVM "
+                        f"volume group ('{vg_name}'). In the event of a disk failure, the backups "
+                        f"will not be recoverable.{colors.RESET}"
+                        )
+                else:
+                    print(
+                        f"{colors.YELLOW}Warning: unable to determine if "
+                        f"'cinder.backup.drivers.posix.BACKUP_PATH' shares the physical disk "
+                        f"with the Cinder volume group ('{vg_name}').{colors.RESET}"
+                        )
+
+        if "nfs" in enabled_cinder_backends:
+            nfs_backup_share = get(config, "cinder.backends.nfs.NFS_SHARE")
+
+            backup_source = get_device_for_path(posix_backup_path)
+            backup_server, backup_export = parse_nfs_source(backup_source)
+
+            vol_server,  vol_export = parse_nfs_source(nfs_backup_share)
+
+            if backup_server == vol_server and backup_export == vol_export:
+                print(
+                    f"{colors.YELLOW}Warning: 'cinder.backup.drivers.posix.BACKUP_PATH' "
+                    f"is mounted from the same NFS export ({nfs_backup_share}) as the Cinder "
+                    f"volume backend NFS. In the event of a storage failure, the "
+                    f"backups will not be recoverable.{colors.RESET}"
+                )
+            elif backup_server == vol_server:
+                print(
+                    f"{colors.YELLOW}Warning: 'cinder.backup.drivers.posix.BACKUP_PATH' "
+                    f"is mounted from the same NFS server ({backup_server}) as the Cinder "
+                    f"volume backend NFS, on a different export.{colors.RESET}"
+                )
+
     elif backup_driver == "nfs":
-
-        ALLOWED_NFS_OPTIONS = {
-            "vers",
-            "proto",
-            "port",
-            "timeo",
-            "retrans",
-            "rsize",
-            "wsize",
-            "hard",
-            "soft",
-            "ro",
-            "rw",
-            "sync",
-            "async",
-            "bg",
-            "fg",
-        }
-
-        def is_valid_nfs_options(options: str) -> bool:
-            try:
-                options = options.removeprefix("-o").strip()
-
-                for option in options.split(","):
-                    option = option.strip()
-
-                    if not option:
-                        continue
-
-                    key = option.split("=", 1)[0]
-
-                    if key not in ALLOWED_NFS_OPTIONS:
-                        return False
-
-                return True
-
-            except (AttributeError, ValueError):
-                return False
-
-        def is_valid_nfs_share(share: str) -> bool:
-            pattern = r"^[^:/\s]+:/[^:\s]+$"
-            return bool(re.match(pattern, share))
         
         nfs_backup = get(config, "cinder.backup.drivers.nfs")
         nfs_backup_fields = [
             "cinder.backup.drivers.nfs.NFS_SHARE",
             "cinder.backup.drivers.nfs.MOUNT_POINT_BASE",
+            "cinder.backup.drivers.nfs.USE_EXTERNAL_SHARE"
         ]
 
         nfs_share = get(config, nfs_backup_fields[0])
         mount_point_base = get(config, nfs_backup_fields[1])
+
+        use_external_share = get(config, nfs_backup_fields[2])
 
         nfs_extra_mount_options = get(config, "cinder.backup.drivers.nfs.MOUNT_OPTIONS")
 
@@ -586,6 +608,32 @@ def validate_cinder_backup(config) -> bool:
                 print(f"{colors.RED}Error: 'cinder.backup.drivers.nfs.MOUNT_OPTIONS' contains invalid options\n\nThe valid options list are: {', '.join(ALLOWED_NFS_OPTIONS)}{colors.RESET}")
                 ok = False
 
+        if use_external_share:
+            if use_external_share not in ("yes", "no", "true", "false"):
+                print(f"{colors.RED}Error: '{nfs_backup_fields[2]}' must be yes/no{colors.RESET}")
+                ok = False
+
+        if "nfs" in enabled_cinder_backends:
+            backup_server, backup_export = parse_nfs_source(nfs_share)
+
+            vol_nfs_share = get(config, f"cinder.backends.nfs.NFS_SHARE")
+            vol_server, vol_export = parse_nfs_source(vol_nfs_share)
+
+            if backup_server and vol_server:
+                if backup_server == vol_server and backup_export == vol_export:
+                    print(
+                        f"{colors.YELLOW}Warning: 'cinder.backup.drivers.nfs.NFS_SHARE' "
+                        f"points to the same NFS export ({nfs_share}) as the Cinder volume "
+                        f"backend NFS. In the event of a storage failure, the backups "
+                        f"will not be recoverable.{colors.RESET}"
+                    )
+                elif backup_server == vol_server:
+                    print(
+                        f"{colors.YELLOW}Warning: 'cinder.backup.drivers.nfs.NFS_SHARE' uses the "
+                        f"same NFS server ({backup_server}) as the Cinder volume backend "
+                        f"NFS, on a different export.{colors.RESET}"
+                    )
+
     fields_to_validate_int = [
         cinder_backup_fields[2],
         cinder_backup_fields[3],
@@ -609,7 +657,30 @@ def validate_cinder(config) -> bool:
     enable_cinder_backup = get(config, "cinder.ENABLE_CINDER_BACKUP")
     enabled_backends = get(config, "cinder.ENABLED_BACKENDS", []) or []
 
+    allowed_backends = {"lvm", "nfs"}
+    volume_type_names = []
+
+    default_volume_type = (get(config, "cinder.DEFAULT_VOLUME_TYPE" or "")).strip()
+
     OPENSTACK_RESERVED_PORTS.add(8776)
+
+    if not isinstance(enabled_backends, list):
+        print(f"{colors.RED}Error: 'cinder.ENABLED_BACKENDS' must be a list{colors.RESET}")
+        ok = False
+
+    if not all(isinstance(backend, str) and backend.strip() for backend in enabled_backends):
+        print(f"{colors.RED}Error: 'cinder.ENABLED_BACKENDS' must contain non-empty strings{colors.RESET}")
+        ok = False
+
+    invalid = set(enabled_backends) - allowed_backends
+
+    if invalid:
+        print(f"{colors.RED}Error: Unsupported Cinder backends: '{invalid}'{colors.RESET}")
+        ok = False
+
+    if not default_volume_type:
+        print(f"{colors.RED}Error: 'cinder.DEFAULT_VOLUME_TYPE' is not set{colors.RESET}")
+        ok = False
 
     if "lvm" in enabled_backends:
 
@@ -619,9 +690,13 @@ def validate_cinder(config) -> bool:
         volume_clear = (get(config, "cinder.backends.lvm.VOLUME_CLEAR") or "").lower()
         volume_clear_size = get(config, "cinder.backends.lvm.VOLUME_CLEAR_SIZE")
 
+        volume_type_name = get(config, "cinder.backends.lvm.VOLUME_TYPE_NAME")
+
         size = None
 
         required_fields = [
+            "cinder.backends.lvm.BACKEND_NAME",
+            "cinder.backends.lvm.VOLUME_TYPE_NAME",
             "cinder.backends.lvm.VOLUME_GROUP",
             "cinder.backends.lvm.VOLUME_CLEAR",
             "cinder.backends.lvm.VOLUME_CLEAR_SIZE",
@@ -633,8 +708,10 @@ def validate_cinder(config) -> bool:
             return False
 
         if enable_cinder_backup not in ("yes", "no"):
-            print(f"{colors.RED}Error: 'cinder.ENABLE_CINDER_BACKUP' must be 'yes' or 'no' (got '{enable_cinder_backup}'){colors.RESET}")
+            print(f"{colors.RED}Error: 'cinder.ENABLE_CINDER_BACKUP' must be 'yes' or 'no'{colors.RESET}")
             ok = False
+
+        volume_type_names.append(volume_type_name)
 
         for field in required_fields:
             if not get(config, field):
@@ -719,7 +796,100 @@ def validate_cinder(config) -> bool:
                     print(f"{colors.RED}Error: cannot determine disk usage for {directory}{colors.RESET}")
                     ok = False
 
+        if "nfs" in enabled_backends:
+
+            volume_type_name = get(config, "cinder.backends.nfs.VOLUME_TYPE_NAME")
+
+            required_fields = [
+                "cinder.backends.nfs.BACKEND_NAME",
+                "cinder.backends.nfs.VOLUME_TYPE_NAME",
+                "cinder.backends.nfs.NFS_SHARE",
+                "cinder.backends.nfs.MOUNT_POINT_BASE",
+            ]
+
+            ratios_fields = [
+                "cinder.backends.nfs.NFS_USED_RATIO",
+                "cinder.backends.nfs.NFS_OVERSUB_RATIO",
+            ]
+
+            for field in required_fields:
+                if not get(config, field):
+                    print(f"{colors.RED}Error: '{field}' is not set{colors.RESET}")
+                    ok = False
+
+            mount_options = get(config, "cinder.backends.nfs.MOUNT_OPTIONS")
+            sparsed_volumes = get(config, "cinder.backends.nfs.NFS_SPARSED_VOLUMES")
+
+            enabled_snapshots = get(config, "cinder.backends.nfs.ENABLE_SNAPSHOTS")
+
+            use_external_share = get(config, "cinder.backends.nfs.USE_EXTERNAL_SHARE")
+
+            nfs_share = get(config, required_fields[2])
+            mount_point_base = get(config, required_fields[3])
+
+            volume_type_names.append(volume_type_name)
+
+            if not is_valid_nfs_share(nfs_share):
+                print(f"{colors.RED}Error: '{required_fields[2]}' is an invalid NFS Share syntax{colors.RESET}")
+                ok = False
+            
+            if not is_valid_path(mount_point_base, required_fields[3]):
+                ok = False
+
+            if mount_options:
+                if not is_valid_nfs_options(mount_options):
+                    print(f"{colors.RED}Error: 'cinder.backends.nfs.MOUNT_POINT_BASE' contains invalid options\n\nThe valid options list are: {', '.join(ALLOWED_NFS_OPTIONS)}{colors.RESET}")
+                    ok = False
+
+            if sparsed_volumes:
+                if sparsed_volumes not in ("sparse", "thick"):
+                    print(f"{colors.RED}Error: Invalid value for 'cinder.backends.nfs.NFS_SPARSED_VOLUMES'"
+                            f"Allowed values are: ('sparse', 'thick').{colors.RESET}"
+                    )
+                    ok = False
+
+            if use_external_share:
+                if use_external_share not in ("yes", "no", "true", "false"):
+                    print(f"{colors.RED}Error: 'cinder.backends.nfs.USE_EXTERNAL_SHARE' must be yes/no{colors.RESET}")
+                    ok = False
+
+            for ratio_field in ratios_fields:
+                ratio = get(config, ratio_field, None)
+
+                if ratio:
+                    try:
+                        float_val = float(ratio)
+
+                        if not 0 <= float_val <= 1:
+                            print(
+                                f"{colors.RED}Error: "
+                                f"'{ratio_field}' must be between 0 and 1, "
+                                f"found: {ratio}{colors.RESET}"
+                            )
+                            ok = False
+
+                    except (TypeError, ValueError):
+                        print(
+                            f"{colors.RED}Error: "
+                            f"'{ratio_field}' must be a decimal number, "
+                            f"found: {ratio}{colors.RESET}"
+                        )
+                        ok = False
+
+            if enabled_snapshots:
+                if enabled_snapshots not in ("yes", "no", "true", "false"):
+                    print(f"{colors.RED}Error: 'cinder.backends.nfs.ENABLE_SNAPSHOTS' must be 'yes' or 'no'{colors.RESET}")
+                    ok = False
+
         target_ip = get(config, "cinder.backends.lvm.TARGET_IP_ADDRESS") or ""
+
+        if default_volume_type not in volume_type_names:
+            print(
+                f"{colors.RED}Error: default volume type "
+                f"'{default_volume_type}' is not configured. "
+                f"Available types: {', '.join(volume_type_names)}{colors.RESET}"
+            )
+            ok = False
 
         if isinstance(target_ip, dict) or (isinstance(target_ip, str) and "{network.HOST_IP}" in target_ip):
             pass  
@@ -1465,7 +1635,7 @@ def validate_optional_services(config) -> bool:
 
     for field in services:
         value = get(config, field)
-        if value not in ("yes", "no"):
+        if value not in ("yes", "no", "true", "false"):
             print(f"{colors.RED}Error: '{field}' must be 'yes' or 'no' (got '{value}'){colors.RESET}")
             ok = False
     return ok

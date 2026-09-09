@@ -11,6 +11,116 @@ from pathlib import Path
 prohibited_pw_chars = [' ', '$', '`', '\\']
 VALID_PATH_RE = re.compile(r"^/[A-Za-z0-9._/-]+$")
 
+ALLOWED_NFS_OPTIONS = {
+    "vers",
+    "proto",
+    "port",
+    "timeo",
+    "retrans",
+    "rsize",
+    "wsize",
+    "hard",
+    "soft",
+    "ro",
+    "rw",
+    "sync",
+    "async",
+    "bg",
+    "fg",
+}
+
+def get_parent_disk(device):
+    dev_name = device.removeprefix("/dev/")
+    try:
+        result = subprocess.run(
+            ["lsblk", "-no", "PKNAME", f"/dev/{dev_name}"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        parent = result.stdout.strip()
+        if parent:
+            return f"/dev/{parent}"
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
+    return device
+
+def get_device_for_path(path):
+    try:
+        result = subprocess.run(
+            ["findmnt", "-n", "-o", "SOURCE", "-T", path],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+        return result.stdout.strip()
+
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+
+def get_physical_disk(path):
+
+    device = get_device_for_path(path)
+    if not device:
+        return None
+
+    seen = set()
+    current = device
+    while current not in seen:
+        seen.add(current)
+        parent = get_parent_disk(current)
+        if parent == current:
+            break
+        current = parent
+
+    return current
+
+def get_vg_physical_disks(vg_name):
+    try:
+        result = subprocess.run(
+            ["pvs", "--noheadings", "-o", "pv_name", "--select", f"vg_name={vg_name}"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return []
+
+    pv_devices = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+    disks = set()
+    for pv in pv_devices:
+        disk = get_physical_disk(pv)
+        if disk:
+            disks.add(disk)
+
+    return disks
+
+def is_valid_nfs_options(options: str) -> bool:
+    try:
+        options = options.removeprefix("-o").strip()
+
+        for option in options.split(","):
+            option = option.strip()
+
+            if not option:
+                continue
+
+            key = option.split("=", 1)[0]
+
+            if key not in ALLOWED_NFS_OPTIONS:
+                return False
+
+        return True
+
+    except (AttributeError, ValueError):
+        return False
+
+def is_valid_nfs_share(share: str) -> bool:
+    pattern = r"^[^:/\s]+:/[^:\s]+$"
+    return bool(re.match(pattern, share))
+
 def validate_port(port):
     try:
         port = int(port)
