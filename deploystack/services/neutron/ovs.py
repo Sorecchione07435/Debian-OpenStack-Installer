@@ -554,7 +554,7 @@ def create_ovs_networks(config, env):
 
 def run_setup_ovs_neutron(config, env):
 
-    create_ovs_bridges = parse_bool(get(config, "neutron.ovn.CREATE_BRIDGES"), False)
+    create_ovs_bridges = parse_bool(get(config, "neutron.ovs.CREATE_BRIDGES"), False)
 
     if not install_pkgs(): return False
     
