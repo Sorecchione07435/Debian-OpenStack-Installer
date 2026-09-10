@@ -237,8 +237,10 @@ def check_deployment(include_endpoints: bool = True):
                 smb_conf = "/etc/samba/smb.conf"
 
                 samba_services = ["smbd.service"]
+
+                disable_netbios = get_conf_option(smb_conf, "global", "disable netbios")
                 
-                if service_exists("nmbd.service"):
+                if service_exists("nmbd.service") and disable_netbios == "no":
                     samba_services.append("nmbd.service")
 
                 add_packages_check(["samba", "samba-common-bin"])
