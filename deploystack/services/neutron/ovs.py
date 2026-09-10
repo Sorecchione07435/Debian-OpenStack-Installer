@@ -320,12 +320,13 @@ def conf_neutron_ovs(config):
             set_conf_option(conf_openvswitch, "agent", "tunnel_types", "vxlan")
 
             set_conf_option(conf_openvswitch, "ovs", "tunnel_bridge", tunnel_bridge)
-            set_conf_option(conf_openvswitch, "ovs", "local_ip", ip_address)
     else:
         set_conf_option(conf_ml2, "ml2", "tenant_network_types", "local")
 
     set_conf_option(conf_ml2, "securitygroup", "enable_ipset", "true")
     set_conf_option(conf_ml2, "ml2", "mechanism_drivers", "openvswitch")
+
+    set_conf_option(conf_openvswitch, "ovs", "local_ip", ip_address)
 
     set_conf_option(conf_openvswitch, "ovs", "integration_bridge", "br-int")
 

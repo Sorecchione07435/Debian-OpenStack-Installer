@@ -118,11 +118,11 @@ iface br-shares inet static
         print()
 
         ovs_services = ["systemctl", "restart",
-                    "ovn-ovsdb-server-nb",
-                    "ovn-ovsdb-server-sb",
-                    "ovn-northd",
-                    "ovn-controller",
-                    "nova-compute"]
+            "ovn-ovsdb-server-nb",
+            "ovn-ovsdb-server-sb",
+            "ovn-northd",
+            "ovn-controller",
+            "nova-compute"]
         
         if service_exists("neutron-api.service") and not service_exists("neutron-server.service"):
             ovs_services.append("neutron-api")
@@ -145,6 +145,7 @@ iface br-shares inet static
 
         ovs_bridge_mappings_str = ",".join(bridge_mappings)
 
+        set_conf_option(conf_openvswitch, "agent", "tunnel_types", "vxlan")
         set_conf_option(conf_openvswitch, "ovs", "bridge_mappings", ovs_bridge_mappings_str)
 
         print()  
