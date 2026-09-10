@@ -133,7 +133,7 @@ def run_setup_directio_patch():
 
     if not run_command(
         ["systemctl", "restart", "manila-share"],
-        "Restarting Manila Share..."
+        "Restarting Manila Share...",  False, None, 3, 5
     ):
         return False
 

@@ -104,7 +104,7 @@ def finalize(config):
 
     print()
 
-    if not run_command(["systemctl", "restart", "manila-scheduler", "manila-api"], "Restarting Manila services..."):
+    if not run_command(["systemctl", "restart", "manila-scheduler", "manila-api"], "Restarting Manila services...", False, None, 3, 5):
         return False
     
     if os.path.exists("/var/lib/manila/manila.sqlite"):
