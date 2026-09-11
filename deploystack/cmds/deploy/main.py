@@ -23,7 +23,7 @@ def init_parser(subparsers):
 
     deployment_group = deployment_options.add_mutually_exclusive_group(required=True)
 
-    gateway = general_options.add_mutually_exclusive_group(required=True)
+    gateway = general_options.add_mutually_exclusive_group(required=False)
 
     manila = parser.add_argument_group("Manila Options")
     cinder = parser.add_argument_group("Cinder Options")
