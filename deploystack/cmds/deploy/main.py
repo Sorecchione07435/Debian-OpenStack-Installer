@@ -226,7 +226,7 @@ def init_parser(subparsers):
     gateway.add_argument(
         "--default-gateway",
         type=str,
-        default=None
+        default=None,
         help="Default network gateway used by the OpenStack host for outbound traffic."
     )
 
