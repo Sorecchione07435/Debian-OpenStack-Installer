@@ -25,14 +25,30 @@ def validate_manila_args(parser, args):
                 "Manila options require --install-manila yes"
             )
 
+    lvm_arguments = [
+        args.manila_lvm_physical_volume is not None,
+        args.manila_lvm_image_size_in_gb is not None,
+        args.manila_volume_group is not None
+    ]
+
+    if args.install_manila == "yes" and (
+        not args.manila_backend
+        or "lvm" not in args.manila_backend
+    ) and any(lvm_arguments):
+        parser.error("LVM options require 'lvm' in --manila-backend")
+
     validate_manila_backend(parser, args)
     
 def validate_cinder_args(parser, args):
 
-    if "nfs" not in args.cinder_enabled_backends:
-       
-        if args.enable_nfs_snapshots:
-            parser.error("--enable-nfs-snapshots require 'nfs' in --cinder-enabled-backends")
+    if args.enable_nfs_snapshots and (
+        not args.cinder_enabled_backends
+        or "nfs" not in args.cinder_enabled_backends
+    ):
+        parser.error(
+            "--enable-nfs-snapshots requires 'nfs' in --cinder-enabled-backends"
+        )
+
 
     if args.install_cinder == "no":
         provided = [
