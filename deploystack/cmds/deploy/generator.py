@@ -75,7 +75,7 @@ def config_openstack(
     ip = info["ip"]
     netmask = info["netmask"]
 
-    if default_gateway == "":
+    if default_gateway is None:
         gateway = info["gateway"]
     else:
         gateway = default_gateway
