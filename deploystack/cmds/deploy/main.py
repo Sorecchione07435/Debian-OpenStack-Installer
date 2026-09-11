@@ -85,8 +85,7 @@ def init_parser(subparsers):
         "--enable-nfs-snapshots",
         choices=["yes", "no"],
         type=str,
-        help="Enable or disable snapshot support for the Cinder NFS driver. "
-         "Use 'yes' to enable snapshots or 'no' to disable them."
+        help="Enable or disable snapshot support for the Cinder NFS driver. (yes/no)"
     )
 
     cinder.add_argument(
