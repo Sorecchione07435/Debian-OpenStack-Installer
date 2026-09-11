@@ -28,6 +28,12 @@ def validate_manila_args(parser, args):
     validate_manila_backend(parser, args)
     
 def validate_cinder_args(parser, args):
+
+    if "nfs" not in args.cinder_enabled_backends:
+       
+        if args.enable_nfs_snapshots:
+            parser.error("--enable-nfs-snapshots require 'nfs' in --cinder-enabled-backends")
+
     if args.install_cinder == "no":
         provided = [
             args.cinder_physical_volume is not None,

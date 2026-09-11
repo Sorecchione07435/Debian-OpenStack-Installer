@@ -14,6 +14,8 @@ from .utils.shares import create_shares, create_share_types
 
 from .protocols.nfs import run_setup_nfs
 
+conf_openvswitch = "/etc/neutron/plugins/ml2/openvswitch_agent.ini"
+
 manila_conf = "/etc/manila/manila.conf"
 
 def _set_service_auth(conf, section, username, ip_address, region, password):
@@ -48,6 +50,8 @@ def conf_generic_backend(config):
     generic_interface_driver = get(config, "manila.backends.generic.INTERFACE_DRIVER")
     generic_service_image_name = get(config, "manila.backends.generic.SERVICE_IMAGE_NAME")
 
+    neutron_driver = config.get("neutron", {}).get("DRIVER", "ovs").lower()
+
     generic_share_server_to_tenant_network = parse_bool(get(config, "manila.backends.generic.CONNECT_SHARE_SERVER_TO_TENANT_NETWORK", False))
 
     enabled_share_protocols = ",".join(protocols)
@@ -60,9 +64,9 @@ def conf_generic_backend(config):
         if not run_setup_nfs(): return False
 
     for helper in share_helpers:
-            for helper_type, config in helper.items():
-                helper_name = config.get("name")
-                helpers.append(f"{helper_type}={helper_name}")
+        for helper_type, config in helper.items():
+            helper_name = config.get("name")
+            helpers.append(f"{helper_type}={helper_name}")
 
     helpers = [f"{helper_type}={config.get('name')}" for helper in share_helpers for helper_type, config in helper.items()]
 
@@ -88,6 +92,9 @@ def conf_generic_backend(config):
     set_conf_option(manila_conf, "generic", "connect_security_service_method", "ssh")
     set_conf_option(manila_conf, "generic", "service_instance_launch_timeout", "300")
 
+    if neutron_driver == "ovs":
+        set_conf_option(conf_openvswitch, "agent", "tunnel_types", "vxlan")
+
     return True
 
 def finalize(env):
@@ -109,7 +116,7 @@ def finalize_generic_backend(config, env):
     create_shares_enabled = parse_bool(get(config, "manila.CREATE_SHARES") , False)
 
     manila_temp_image_file = "/tmp/manila-service-image.qcow2"
-    manila_image_url = "https://tarballs.opendev.org/openstack/manila-image-elements/images/manila-service-image-1.3.0-77-g8cd2097.qcow2"
+    manila_image_url = "https://tarballs.opendev.org/openstack/manila-image-elements/images/manila-service-image-lustre-master.qcow2"
 
     generic_service_image_name = get(config, "manila.backends.generic.SERVICE_IMAGE_NAME")
 

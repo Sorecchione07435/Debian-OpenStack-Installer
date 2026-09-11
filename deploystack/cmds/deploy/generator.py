@@ -51,7 +51,9 @@ def config_openstack(
     manila_share_protocols: str = "",
     os_release: str = "caracal",
     os_mgmt_iface: str = "",
+
     os_mgmt_gateway: str = "",
+    default_gateway: str = "",
 
     enable_cinder_backup = "no",
     cinder_backup_driver = "",
@@ -72,7 +74,12 @@ def config_openstack(
 
     ip = info["ip"]
     netmask = info["netmask"]
-    gateway = info["gateway"]
+
+    if default_gateway == "":
+        gateway = info["gateway"]
+    else:
+        gateway = default_gateway
+
     ip_cidr = info["network_cidr"]
     network = info["network"]
 

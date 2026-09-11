@@ -23,6 +23,8 @@ def init_parser(subparsers):
 
     deployment_group = deployment_options.add_mutually_exclusive_group(required=True)
 
+    gateway = general_options.add_mutually_exclusive_group(required=True)
+
     manila = parser.add_argument_group("Manila Options")
     cinder = parser.add_argument_group("Cinder Options")
 
@@ -214,11 +216,18 @@ def init_parser(subparsers):
         help="Override the OpenStack management network interface used by services (example: eth0, ens18)"
     )
 
-    general_options.add_argument(
+    gateway.add_argument(
         "--os-management-gateway",
         type=str,
         default=None,
         help="Override the OpenStack management gateway interface used by services"
+    )
+
+    gateway.add_argument(
+        "--default-gateway",
+        type=str,
+        default=None
+        help="Default network gateway used by the OpenStack host for outbound traffic."
     )
 
     parser.set_defaults(cmd_parser=parser)
@@ -394,6 +403,8 @@ def deploy(parser, args) -> None:
             manila_share_protocols=manila_share_protocols,
 
             os_mgmt_iface=args.os_management_interface,
+
+            default_gateway=args.default_gateway,
             os_mgmt_gateway=args.os_management_gateway,
 
             os_release=os_release,
