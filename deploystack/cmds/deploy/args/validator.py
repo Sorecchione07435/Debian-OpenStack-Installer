@@ -1,4 +1,23 @@
+import ipaddress
+
 def validate_deploy_args(parser, args):
+
+    if args.os_management_gateway is not None:
+        try:
+            ipaddress.ip_address(args.os_management_gateway)
+        except ValueError:
+            parser.error(
+                "--os-management-gateway must be a valid IP address"
+            )
+
+    if args.default_gateway is not None:
+        try:
+            ipaddress.ip_address(args.default_gateway)
+        except ValueError:
+            parser.error(
+                "--default-gateway must be a valid IP address"
+            )
+
 
     # Cinder
     if args.enable_nfs_snapshots == "yes":
