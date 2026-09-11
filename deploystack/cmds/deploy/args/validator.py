@@ -1,81 +1,86 @@
-import ipaddress
-
-def validate_management_args(parser, args):
-     if args.os_management_gateway:
-        try:
-            ipaddress.ip_address(args.os_management_gateway)
-        except ValueError:
-            parser.error("--os-management-gateway has a invalid Gateway")
-
-def validate_manila_backend(parser, args):
-    if args.install_cinder == "no" and args.manila_backend == "generic":
-        parser.error("Manila generic backend requires --install-cinder yes")
-
-def validate_manila_args(parser, args):
-    if args.install_manila == "no":
-        provided = [
-            args.manila_lvm_physical_volume is not None,
-            args.manila_lvm_image_size_in_gb is not None,
-            args.manila_backend is not None,
-            args.manila_share_protocols is not None,
-        ]
-
-        if any(provided):
-            parser.error(
-                "Manila options require --install-manila yes"
-            )
-
-    lvm_arguments = [
-        args.manila_lvm_physical_volume is not None,
-        args.manila_lvm_image_size_in_gb is not None,
-        args.manila_volume_group is not None
-    ]
-
-    if args.install_manila == "yes" and (
-        not args.manila_backend
-        or "lvm" not in args.manila_backend
-    ) and any(lvm_arguments):
-        parser.error("LVM options require 'lvm' in --manila-backend")
-
-    validate_manila_backend(parser, args)
-    
-def validate_cinder_args(parser, args):
-
-    if args.enable_nfs_snapshots and (
-        not args.cinder_enabled_backends
-        or "nfs" not in args.cinder_enabled_backends
-    ):
-        parser.error(
-            "--enable-nfs-snapshots requires 'nfs' in --cinder-enabled-backends"
-        )
-
-
-    if args.install_cinder == "no":
-        provided = [
-            args.cinder_physical_volume is not None,
-            args.cinder_lvm_image_size_in_gb != 5,
-        ]
-
-        if any(provided):
-            parser.error("Cinder options require --install-cinder yes")
-
-def validate_cinder_backup_args(parser, args):
-    if args.cinder_backup_driver == "no":
-        provided = [
-            args.cinder_backup_driver,
-            args.compression_algorithm,
-            args.backup_file_size_in_bytes,
-            args.backup_sha_block_size_in_bytes,
-            args.backup_workers
-        ]
-
-        if any(provided):
-            parser.error("Cinder Backup options require --enable-cinder-backup yes")
-
 def validate_deploy_args(parser, args):
 
-    validate_management_args(parser, args)
+    # Cinder
+    if args.enable_nfs_snapshots == "yes":
+        if args.install_cinder != "yes":
+            parser.error(
+                "--enable-nfs-snapshots requires --install-cinder yes"
+            )
 
-    validate_manila_args(parser, args)
-    validate_cinder_args(parser, args)
-    
+        if (
+            not args.cinder_enabled_backends
+            or "nfs" not in args.cinder_enabled_backends
+        ):
+            parser.error(
+                "--enable-nfs-snapshots requires 'nfs' "
+                "in --cinder-enabled-backends"
+            )
+
+    # Cinder LVM
+    if (
+        args.cinder_lvm_image_size_in_gb is not None
+        and args.cinder_lvm_image_size_in_gb <= 0
+    ):
+        parser.error(
+            "--cinder-lvm-image-size-in-gb must be greater than 0"
+        )
+
+    # Cinder backup
+    backup_arguments = [
+        args.cinder_backup_driver is not None,
+        args.compression_algorithm is not None,
+        args.backup_file_size_in_bytes is not None,
+        args.backup_sha_block_size_in_bytes is not None,
+        args.backup_workers is not None,
+    ]
+
+    if args.enable_cinder_backup != "yes" and any(backup_arguments):
+        parser.error(
+            "Cinder backup options require --enable-cinder-backup yes"
+        )
+
+    if (
+        args.enable_cinder_backup == "yes"
+        and args.install_cinder != "yes"
+    ):
+        parser.error(
+            "--enable-cinder-backup yes requires --install-cinder yes"
+        )
+
+    # Manila
+    manila_lvm_arguments = [
+        args.manila_lvm_physical_volume is not None,
+        args.manila_lvm_image_size_in_gb is not None,
+        args.manila_volume_group is not None,
+    ]
+
+    if args.install_manila != "yes" and any(manila_lvm_arguments):
+        parser.error(
+            "Manila options require --install-manila yes"
+        )
+
+    if (
+        args.install_manila == "yes"
+        and args.manila_backend == "generic"
+        and any(manila_lvm_arguments)
+    ):
+        parser.error(
+            "Manila LVM options cannot be used with "
+            "--manila-backend generic"
+        )
+
+    if (
+        args.manila_lvm_image_size_in_gb is not None
+        and args.manila_lvm_image_size_in_gb <= 0
+    ):
+        parser.error(
+            "--manila-lvm-image-size-in-gb must be greater than 0"
+        )
+
+    if (
+        args.manila_share_protocols is not None
+        and args.install_manila != "yes"
+    ):
+        parser.error(
+            "--manila-share-protocols requires --install-manila yes"
+        )
