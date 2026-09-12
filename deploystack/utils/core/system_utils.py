@@ -38,8 +38,27 @@ def get_parent_disk(device):
         pass
     return device
 
+def resolve_loop_backing_file(loop_device):
+
+    try:
+        result = subprocess.run(["losetup", "-l", "-n", "-O",  "NAME,BACK-FILE", loop_device], capture_output=True, text=True, check=True)
+        line = result.stdout.strip()
+        if not line:
+            return None
+
+        parts = line.split(None, 1)
+        return parts[1].strip() if len(parts) == 2 else None
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None 
+
 def resolve_device_to_disk(device):
     if not device or not device.startswith("/dev"):
+        return None
+
+    if "/loop" in device:
+        backing_file = resolve_loop_backing_file(device)
+        if backing_file:
+            return get_physical_disk(backing_file)
         return None
 
     seen = set()
