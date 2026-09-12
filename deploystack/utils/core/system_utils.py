@@ -29,6 +29,8 @@ def get_parent_disk(device):
             text=True,
             check=True,
         )
+
+        lines = {l.strip() for l in result.stdout.splitlines() if l.strip()}
         parent = result.stdout.strip()
         if parent:
             return f"/dev/{parent}"
@@ -74,6 +76,17 @@ def get_physical_disk(path):
     return current
 
 def get_vg_physical_disks(vg_name):
+
+    try:
+        subprocess.run(["vgscan"], check=True)
+    except subprocess.CalledProcessError:
+        pass
+
+    try:
+        subprocess.run(["vgscan", "--cache"], check=True)
+    except subprocess.CalledProcessError:
+        pass
+
     try:
         result = subprocess.run(
             ["pvs", "--noheadings", "-o", "pv_name", "--select", f"vg_name={vg_name}"],
