@@ -11,6 +11,8 @@ from ...templates import OPENSTACK_CONFIG_TEMPLATE
 
 from ...utils.config.helpers import parse_bool
 
+from ...utils.core import colors
+
 config_file_path = ""
 
 def _remove_empty(d):
@@ -106,7 +108,10 @@ def config_openstack(
     config_dict.setdefault("network", {})
 
     if os_mgmt_iface:
-        mgmt_iface_info = get_network_info(interface_name=os_mgmt_iface)
+        try:
+            mgmt_iface_info = get_network_info(interface_name=os_mgmt_iface)
+        except ValueError:
+            print(f"{colors.RED}The '{os_mgmt_iface}' management interface does not have an assigned IPv4 address. Configure it (DHCP or static IP) before starting the deployment.{colors.RESET}")
 
         mgmt_iface = os_mgmt_iface
         mgmt_ip = mgmt_iface_info["ip"]
