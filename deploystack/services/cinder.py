@@ -263,8 +263,15 @@ def conf_cinder_backup(config):
         if "lvm" in enabled_cinder_backends:
             vg_name = get(config, "cinder.backends.lvm.VOLUME_GROUP")
 
-            backup_disk = get_physical_disk(get_device_for_path(backup_filesystem_path))
+            raw_device = get_device_for_path(backup_filesystem_path)
+            backup_disk = get_physical_disk(backup_filesystem_path)
             vg_disks = get_vg_physical_disks(vg_name)
+
+            print(f"{colors.YELLOW}[debug] backup_filesystem_path: {backup_filesystem_path!r}{colors.RESET}")
+            print(f"{colors.YELLOW}[debug] raw device (findmnt): {raw_device!r}{colors.RESET}")
+            print(f"{colors.YELLOW}[debug] backup_disk (resolved): {backup_disk!r}{colors.RESET}")
+            print(f"{colors.YELLOW}[debug] vg_name: {vg_name!r}{colors.RESET}")
+            print(f"{colors.YELLOW}[debug] vg_disks: {vg_disks!r}{colors.RESET}")
 
             if backup_disk and vg_disks:
                 if backup_disk in vg_disks:
