@@ -30,7 +30,7 @@ def get_parent_disk(device):
             check=True,
         )
 
-        lines = {l.strip() for l in result.stdout.splitlines() if l.strip()}
+        lines = [l.strip() for l in result.stdout.splitlines() if l.strip()]
         parent = lines[0] if lines else ""
         if parent:
             return f"/dev/{parent}"
