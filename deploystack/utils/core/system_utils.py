@@ -31,12 +31,28 @@ def get_parent_disk(device):
         )
 
         lines = {l.strip() for l in result.stdout.splitlines() if l.strip()}
-        parent = result.stdout.strip()
+        parent = lines[0] if lines else ""
         if parent:
             return f"/dev/{parent}"
     except (subprocess.CalledProcessError, FileNotFoundError):
         pass
     return device
+
+def resolve_device_to_disk(device):
+    if not device or not device.startswith("/dev"):
+        return None
+
+    seen = set()
+
+    current = device
+    while current not in seen:
+        seen.add(current)
+        parent = get_parent_disk(current)
+        if parent == current:
+            break
+        current = parent
+
+    return parent
 
 def get_device_for_path(path):
     if not path:
@@ -64,16 +80,7 @@ def get_physical_disk(path):
     if device in VIRTUAL_FILESYSTEMS or not device.startswith("/dev/"):
         return None
 
-    seen = set()
-    current = device
-    while current not in seen:
-        seen.add(current)
-        parent = get_parent_disk(current)
-        if parent == current:
-            break
-        current = parent
-
-    return current
+    return resolve_device_to_disk(device)
 
 def get_vg_physical_disks(vg_name):
 
@@ -101,7 +108,7 @@ def get_vg_physical_disks(vg_name):
 
     disks = set()
     for pv in pv_devices:
-        disk = get_physical_disk(pv)
+        disk = resolve_device_to_disk(pv)
         if disk:
             disks.add(disk)
 
