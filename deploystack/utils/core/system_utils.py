@@ -104,12 +104,22 @@ def get_physical_disk(path):
 def get_vg_physical_disks(vg_name):
 
     try:
-        subprocess.run(["vgscan"], check=True)
+        subprocess.run(
+            ["vgscan"],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
     except subprocess.CalledProcessError:
         pass
 
     try:
-        subprocess.run(["vgscan", "--cache"], check=True)
+        subprocess.run(
+            ["vgscan", "--cache"],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
     except subprocess.CalledProcessError:
         pass
 
