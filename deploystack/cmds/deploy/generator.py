@@ -4,6 +4,8 @@ import uuid
 import yaml
 import ipaddress
 
+import sys
+
 from ...utils.network.net_utils import get_network_info
 from ...utils.core.system_utils import has_hw_virtualization, get_free_loops, generate_password
 
@@ -111,7 +113,10 @@ def config_openstack(
         try:
             mgmt_iface_info = get_network_info(interface_name=os_mgmt_iface)
         except ValueError:
+            os.remove(config_file_path)
+
             print(f"{colors.RED}The '{os_mgmt_iface}' management interface does not have an assigned IPv4 address. Configure it (DHCP or static IP) before starting the deployment.{colors.RESET}")
+            sys.exit(1)
 
         mgmt_iface = os_mgmt_iface
         mgmt_ip = mgmt_iface_info["ip"]
